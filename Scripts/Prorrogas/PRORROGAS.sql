@@ -51,7 +51,7 @@ BEGIN
 		IFNULL(PARAM_NTRMCR,'')=''		
 	THEN 
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor,';
 	END IF;
 	
 --	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -69,9 +69,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag Estado del Registro , no válido, ';	
 	END IF;
 	
-	IF PARAM_USRCRT NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMCR NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_USRCRT NOT IN ('WEBALMA','WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario de creación no válido, ';
+	END IF;
+
+	IF  PARAM_NTRMCR NOT IN ('WEBALMA','WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal de creación no válido,';
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -193,7 +198,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor,';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -308,7 +313,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor,';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -431,7 +436,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -555,7 +560,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -695,7 +700,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -847,7 +852,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')='' 
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -998,7 +1003,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')='' 
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1171,7 +1176,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1324,7 +1329,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1485,7 +1490,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1596,7 +1601,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1706,7 +1711,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener algún valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
