@@ -2450,7 +2450,7 @@ BEGIN
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';
 	END IF;
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -3473,70 +3473,38 @@ BEGIN
 	DECLARE RESPUESTA VARCHAR(100);
 
     DECLARE C_NODATA CURSOR FOR
-        SELECT 'Sin datos' AS RESULT FROM SYSIBM.SYSDUMMY1;
+        SELECT RESPUESTA AS RESULT FROM SYSIBM.SYSDUMMY1;
     
-    -- NSLCPR no tiene valor
-    DECLARE C_ALMAPER CURSOR FOR
-        SELECT
-            -- Operaciones - Cabecera (ZZWM06)
-            A.CCMPN, A.NOPRCN, A.NWRRNT, A.NCRTDP, A.CCLNT, A.CFNNC, A.SSTCOP, A.SESTRG,
-            -- Solicitudes de prórroga (ZZWW21)
-            B.NSLCPR, B.NENDS, B.FENDS, B.FPRRGA, B.ISLDCL, B.ISLDMR
-        FROM
-            DC@ALMAPER.ZZWM06 A
-            LEFT OUTER JOIN DC@ALMAPER.ZZWW21 B ON A.NOPRCN = B.NOPRCN
-        WHERE
-            A.CCMPN = PARAM_CCMPN AND (
-                (A.PARAM_STPQRY = 'C' AND A.CCLNT = PARAM_CODQRY) OR
-                (A.PARAM_STPQRY = 'B' AND A.CFNNC = PARAM_CODQRY)
-            );
+    DECLARE C_ALMA CURSOR FOR
+    	SELECT 
+		A1.CCMPN, A1.NOPRCN, A1.NWRRNT, A1.NCRTDP, A1.CCLNT, A1.CFNNC, A1.SSTCOP, A1.SESTRG,--OPERACIONES – CABECERA (ZZWM06) 
+		A2.NSLCPR, A2.NENDS, A2.FENDS, A2.FPRRGA, A2.ISLDCL, A2.ISLDMR						--SOLICITUDES DE PRÓRROGA (ZZWW21)
+		FROM DC@ALMAPER.ZZWM06 A1
+		INNER JOIN DC@ALMAPER.ZZWW21 A2 ON ((IFNULL(PARAM_NSLCPR,-1)=-1 AND A2.NSLCPR=A1.NOPRCN) OR 	-- Si el campo NSLCPR está vacío 
+										   ((IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=A1.NOPRCN)))		-- Si el campo NSLCPR no está vacío 
+		WHERE 
+			(IFNULL(PARAM_NSLCPR,-1)=-1 AND																--|Si el campo NSLCPR está vacío 
+			A1.CCMPN=PARAM_CCMPN /*AND A1.CODQRY=PARAM_CODQRY */ AND 									--|Si el campo NSLCPR está vacío 
+			((PARAM_STPQRY='C' AND CCLNT=PARAM_CODQRY) OR (PARAM_STPQRY='B' AND CFNNC=PARAM_CODQRY))	--|Si el campo NSLCPR está vacío 
+		OR (IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
     
-    -- NSLCPR tiene valor
-    DECLARE C_ALMAPER_2 CURSOR FOR
-        SELECT
-            -- Operaciones - Cabecera (ZZWM06)
-            B.CCMPN, B.NOPRCN, B.NWRRNT, B.NCRTDP, B.CCLNT, B.CFNNC, B.SSTCOP, B.SESTRG,
-            -- Solicitudes de prórroga (ZZWW21)
-            A.NSLCPR, A.NENDS, A.FENDS, A.FPRRGA, A.ISLDCL, A.ISLDMR
-        FROM
-            DC@ALMAPER.ZZWW21 A
-            LEFT OUTER JOIN DC@ALMAPER.ZZWM06 B ON A.NOPRCN = B.NOPRCN
-        WHERE
-            A.NOPRCN = PARAM_NSLCPR;
-            
-    
-    -- NSLCPR no tiene valor
     DECLARE C_RNSLIB CURSOR FOR
-        SELECT
-            -- Operaciones - Cabecera (ZZWM06)
-            A.CCMPN, A.NOPRCN, A.NWRRNT, A.NCRTDP, A.CCLNT, A.CFNNC, A.SSTCOP, A.SESTRG,
-            -- Solicitudes de prórroga (ZZWW21)
-            B.NSLCPR, B.NENDS, B.FENDS, B.FPRRGA, B.ISLDCL, B.ISLDMR
-        FROM
-            DC@RNSLIB.ZZWM06 A
-            LEFT OUTER JOIN DC@RNSLIB.ZZWW21 B ON A.NOPRCN = B.NOPRCN
-        WHERE
-            A.CCMPN = PARAM_CCMPN AND (
-                (A.PARAM_STPQRY = 'C' AND A.CCLNT = PARAM_CODQRY) OR
-                (A.PARAM_STPQRY = 'B' AND A.CFNNC = PARAM_CODQRY)
-            );
+    	SELECT 
+		A1.CCMPN, A1.NOPRCN, A1.NWRRNT, A1.NCRTDP, A1.CCLNT, A1.CFNNC, A1.SSTCOP, A1.SESTRG,--OPERACIONES – CABECERA (ZZWM06) 
+		A2.NSLCPR, A2.NENDS, A2.FENDS, A2.FPRRGA, A2.ISLDCL, A2.ISLDMR						--SOLICITUDES DE PRÓRROGA (ZZWW21)
+		FROM DC@RNSLIB.ZZWM06 A1
+		INNER JOIN DC@RNSLIB.ZZWW21 A2 ON ((IFNULL(PARAM_NSLCPR,-1)=-1 AND A2.NSLCPR=A1.NOPRCN) OR 	-- Si el campo NSLCPR está vacío 
+										   ((IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=A1.NOPRCN)))		-- Si el campo NSLCPR no está vacío 
+		WHERE 
+			(IFNULL(PARAM_NSLCPR,-1)=-1 AND																--|Si el campo NSLCPR está vacío 
+			A1.CCMPN=PARAM_CCMPN /*AND A1.CODQRY=PARAM_CODQRY */ AND 									--|Si el campo NSLCPR está vacío 
+			((PARAM_STPQRY='C' AND CCLNT=PARAM_CODQRY) OR (PARAM_STPQRY='B' AND CFNNC=PARAM_CODQRY))	--|Si el campo NSLCPR está vacío 
+		OR (IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
     
-    -- NSLCPR tiene valor
-    DECLARE C_RNSLIB_2 CURSOR FOR
-        SELECT
-            -- Operaciones - Cabecera (ZZWM06)
-            B.CCMPN, B.NOPRCN, B.NWRRNT, B.NCRTDP, B.CCLNT, B.CFNNC, B.SSTCOP, B.SESTRG,
-            -- Solicitudes de prórroga (ZZWW21)
-            A.NSLCPR, A.NENDS, A.FENDS, A.FPRRGA, A.ISLDCL, A.ISLDMR
-        FROM
-            DC@RNSLIB.ZZWW21 A
-            LEFT OUTER JOIN DC@RNSLIB.ZZWM06 B ON A.NOPRCN = B.NOPRCN
-        WHERE
-            A.NOPRCN = PARAM_NSLCPR;
     
     SET RESPUESTA = '';
     IF
-        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        PARAM_CCMPN  NOT IN ('AM','LZ')  OR
         TRIM(B ' ' FROM IFNULL(PARAM_STPQRY, '')) = '' OR
         IFNULL(PARAM_CODQRY, 0) = 0 OR
         PARAM_STPQRY NOT IN ('C','B')
@@ -3545,17 +3513,9 @@ BEGIN
         OPEN C_NODATA;
     ELSE
         IF PARAM_CCMPN = 'AM' THEN
-            IF ISNULL(PARAM_NSLCPR, 0) = 0 THEN
-                OPEN C_ALMAPER;
-            ELSE
-                OPEN C_ALMAPER_2;
-            END IF;
+			OPEN C_ALMA;
         ELSEIF PARAM_CCMPN = 'LZ' THEN
-            IF ISNULL(PARAM_NSLCPR, 0) = 0 THEN
-                OPEN C_RNSLIB;
-            ELSE
-                OPEN C_RNSLIB_2;
-            END IF;
+			OPEN C_RNSLIB;
         ELSE
             SET RESPUESTA = 'Sin datos';
             OPEN C_NODATA;
