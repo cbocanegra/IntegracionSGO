@@ -51,22 +51,22 @@ BEGIN
 		IFNULL(PARAM_NTRMCR,'')=''		
 	THEN 
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
 	END IF;
 	
---	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
---		SET VAL=VAL+1;
---		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';	
---	END IF;
+	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
+		SET VAL=VAL+1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';	
+	END IF;
 
 	IF PARAM_SSTSLP <>'P' THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag Situación solicitud prórroga, no válido, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación solicitud prórroga, no válido, ';
 	END IF;
 	
 	IF PARAM_SESTRG <> 'A' THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag Estado del Registro , no válido, ';	
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro , no válido, ';	
 	END IF;
 	
 	IF PARAM_USRCRT NOT IN ('WEBALMA','WEBCASA') THEN
@@ -198,7 +198,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -206,9 +206,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';	
 	END IF;
 	
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -312,7 +317,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -330,9 +335,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación solicitud prórroga no válido, ';	
 	END IF;
 
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -435,7 +445,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -445,7 +455,7 @@ BEGIN
 	
 	IF PARAM_SSTSLP<>'S' THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag Situación Solicitud Prorroga no válido, ';	
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación solicitud Prorroga no válido, ';	
 	END IF;
 
 	IF PARAM_SESTRG<>'A' THEN
@@ -453,9 +463,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';	
 	END IF;
 	
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 
 	IF VAL=0 THEN	
@@ -559,7 +574,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -569,7 +584,7 @@ BEGIN
 	
 	IF PARAM_SSTSLP<>'I' THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag Situación Solicitud Prorroga no válido, ';	
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación solicitud prórroga no válido, ';	
 	END IF;
 
 	IF PARAM_SESTRG<>'A' THEN
@@ -577,9 +592,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';	
 	END IF;
 
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -699,7 +719,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -717,9 +737,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';	
 	END IF;
 	
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -851,7 +876,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')='' 
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -888,9 +913,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Formato de fecha no válida,';		
 	END IF;
 	
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1002,7 +1032,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')='' 
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1030,9 +1060,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';
 	END IF;
 	
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1175,7 +1210,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1212,9 +1247,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Formato de fecha no válida,';		
 	END IF;
 
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1328,7 +1368,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1356,9 +1396,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';		
 	END IF;
 	
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1489,7 +1534,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1502,9 +1547,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';
 	END IF;
 
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1521,7 +1571,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 				
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1541,7 +1591,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 				
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1600,7 +1650,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1613,9 +1663,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';
 	END IF;
 
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1632,7 +1687,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 			
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1651,7 +1706,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 			
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1710,7 +1765,7 @@ BEGIN
 		IFNULL(PARAM_NTRMNL,'')=''
 	THEN
 		SET VAL=VAL+1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros deben de tener valor, ';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor, ';
 	END IF;
 	
 	IF PARAM_CCMPN<>'AM' AND PARAM_CCMPN<>'LZ' THEN
@@ -1723,9 +1778,14 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido, ';
 	END IF;
 
-	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA') OR PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA') THEN
+	IF PARAM_CULUSA NOT IN ('WEBALMA','WEBCASA')  THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Usuario no pertenece a la compañía,';		
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido, ';		
+	END IF;
+
+	IF PARAM_NTRMNL NOT IN ('WEBALMA','WEBCASA')  THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida, ';		
 	END IF;
 	
 	IF VAL=0 THEN	
@@ -1742,7 +1802,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 			
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1761,7 +1821,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 			
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1833,12 +1893,12 @@ BEGIN
 
     IF PARAM_SESTRG <> '*' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -1848,7 +1908,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWW21
@@ -1951,12 +2011,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> '*' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -1966,7 +2026,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT94
@@ -2069,12 +2129,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> '*' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2084,7 +2144,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT95
@@ -2153,7 +2213,7 @@ BEGIN
 	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_FIRPRG', PARAMETROS, RESPUESTA);
 END
 GO
-
+	
 
 
 -- ----------------------------------------------------------------------------------------------------
@@ -2190,22 +2250,17 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
-
-	IF PARAM_SESTRG<>'*' THEN
-		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro, no válido,';
-	END IF;
 	
 	IF PARAM_SSTSLP<>'P' THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación Solicitud prórroga, no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación solicitud prórroga, no válido,';
 	END IF;
 	
 	IF PARAM_SESTRG<>'A' THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado del registro, no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro, no válido,';
 	END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2215,7 +2270,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWW21
@@ -2230,8 +2285,8 @@ BEGIN
                 UPDATE
                     DC@ALMAPER.ZZWW21
                 SET
-                    SSTSLP ='P',
-                    SESTRG = 'A',
+                    SSTSLP = PARAM_SSTSLP,
+                    SESTRG = PARAM_SESTRG,
                     FULTAC = DC@RNSLIB.FECHA(),
                     HULTAC = DC@RNSLIB.HORA(),
                     CULUSA = PARAM_CULUSA,
@@ -2252,8 +2307,8 @@ BEGIN
                 UPDATE
                     DC@RNSLIB.ZZWW21
                 SET
-                    SSTSLP = 'P',
-                    SESTRG = 'A',
+                    SSTSLP = PARAM_SSTSLP,
+                    SESTRG = PARAM_SESTRG,
                     FULTAC = DC@RNSLIB.FECHA(),
                     HULTAC = DC@RNSLIB.HORA(),
                     CULUSA = PARAM_CULUSA,
@@ -2322,17 +2377,17 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
 	IF PARAM_SSTSLP<>'P' THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación Solicitud prórroga, no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación solicitud prórroga, no válido,';
 	END IF;
 	
 	IF PARAM_SESTRG<>'A' THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado del registro, no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro, no válido,';
 	END IF;	
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2342,7 +2397,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWW21
@@ -2445,7 +2500,7 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2455,7 +2510,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT95 / Eliminación ZZWT94
@@ -2470,7 +2525,7 @@ BEGIN
                 UPDATE
                     DC@ALMAPER.ZZWT95
                 SET
-                    SFRMCL = ' ',
+                    SFRMCL = '',
                     NFRMCL = 0,
                     NFRRCL = 0 , 
                     FULTAC = DC@RNSLIB.FECHA(), 
@@ -2568,12 +2623,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> 'A' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2583,7 +2638,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWW21
@@ -2684,12 +2739,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> 'A' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2699,7 +2754,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT94
@@ -2800,12 +2855,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> 'A' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2815,7 +2870,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT95
@@ -2915,7 +2970,7 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -2925,7 +2980,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Lógica
@@ -3038,12 +3093,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> 'A' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -3053,7 +3108,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWW21
@@ -3153,12 +3208,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> 'A' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -3168,7 +3223,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT94
@@ -3269,12 +3324,12 @@ BEGIN
 
     IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
         SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
     END IF;
 
     IF PARAM_SESTRG <> 'A' THEN
         SET VAL = VAL + 1;
-        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro no válido,';
     END IF;
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
@@ -3284,7 +3339,7 @@ BEGIN
 
     IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
-		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válida,';
 	END IF;
 
     -- Actualización ZZWT95
@@ -3413,7 +3468,7 @@ BEGIN
             -- Representantes por prórroga (Financiador)
             E.NSLCPR AS NSLCPR2, E.CRPRS AS CRPRS2, E.FFRMRP AS FFRMRP2, E.HULTAC AS HULTAC2,
             -- Representantes por prórroga (Cliente)
-            F.NSLCPR AS NSLCPR3, E.CRPRS AS CRPRS3, E.FFRMRP AS FFRMRP3, E.HULTAC AS HULTAC3
+            F.NSLCPR AS NSLCPR3, E.CRPRS AS CRPRS3, E.FFRMRP AS FFRMRP3, E.HULTAC AS HULTAC3,
             -- Exwarrant
             G.NEXWRR
         FROM
@@ -3480,26 +3535,26 @@ BEGIN
 		A1.CCMPN, A1.NOPRCN, A1.NWRRNT, A1.NCRTDP, A1.CCLNT, A1.CFNNC, A1.SSTCOP, A1.SESTRG,--OPERACIONES – CABECERA (ZZWM06) 
 		A2.NSLCPR, A2.NENDS, A2.FENDS, A2.FPRRGA, A2.ISLDCL, A2.ISLDMR						--SOLICITUDES DE PRÓRROGA (ZZWW21)
 		FROM DC@ALMAPER.ZZWM06 A1
-		INNER JOIN DC@ALMAPER.ZZWW21 A2 ON ((IFNULL(PARAM_NSLCPR,-1)=-1 AND A2.NSLCPR=A1.NOPRCN) OR 	-- Si el campo NSLCPR está vacío 
-										   ((IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=A1.NOPRCN)))		-- Si el campo NSLCPR no está vacío 
+		INNER JOIN DC@ALMAPER.ZZWW21 A2 ON ((IFNULL(PARAM_NSLCPR,0)=0 AND A2.NSLCPR=A1.NOPRCN) OR 	-- Si el campo NSLCPR está vacío 
+										   ((IFNULL(PARAM_NSLCPR,0)>0 AND A2.NOPRCN=A1.NOPRCN)))		-- Si el campo NSLCPR no está vacío 
 		WHERE 
-			(IFNULL(PARAM_NSLCPR,-1)=-1 AND																--|Si el campo NSLCPR está vacío 
+			(IFNULL(PARAM_NSLCPR,0)=0 AND																--|Si el campo NSLCPR está vacío 
 			A1.CCMPN=PARAM_CCMPN /*AND A1.CODQRY=PARAM_CODQRY */ AND 									--|Si el campo NSLCPR está vacío 
 			((PARAM_STPQRY='C' AND CCLNT=PARAM_CODQRY) OR (PARAM_STPQRY='B' AND CFNNC=PARAM_CODQRY))	--|Si el campo NSLCPR está vacío 
-		OR (IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
+		OR (IFNULL(PARAM_NSLCPR,0)>0 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
     
     DECLARE C_RNSLIB CURSOR FOR
     	SELECT 
 		A1.CCMPN, A1.NOPRCN, A1.NWRRNT, A1.NCRTDP, A1.CCLNT, A1.CFNNC, A1.SSTCOP, A1.SESTRG,--OPERACIONES – CABECERA (ZZWM06) 
 		A2.NSLCPR, A2.NENDS, A2.FENDS, A2.FPRRGA, A2.ISLDCL, A2.ISLDMR						--SOLICITUDES DE PRÓRROGA (ZZWW21)
 		FROM DC@RNSLIB.ZZWM06 A1
-		INNER JOIN DC@RNSLIB.ZZWW21 A2 ON ((IFNULL(PARAM_NSLCPR,-1)=-1 AND A2.NSLCPR=A1.NOPRCN) OR 	-- Si el campo NSLCPR está vacío 
+		INNER JOIN DC@RNSLIB.ZZWW21 A2 ON ((IFNULL(PARAM_NSLCPR,-1)=-1 AND A2.NSLCPR=A1.NOPRCN) OR 		-- Si el campo NSLCPR está vacío 
 										   ((IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=A1.NOPRCN)))		-- Si el campo NSLCPR no está vacío 
 		WHERE 
-			(IFNULL(PARAM_NSLCPR,-1)=-1 AND																--|Si el campo NSLCPR está vacío 
+			(IFNULL(PARAM_NSLCPR,0)=0 AND																--|Si el campo NSLCPR está vacío 
 			A1.CCMPN=PARAM_CCMPN /*AND A1.CODQRY=PARAM_CODQRY */ AND 									--|Si el campo NSLCPR está vacío 
 			((PARAM_STPQRY='C' AND CCLNT=PARAM_CODQRY) OR (PARAM_STPQRY='B' AND CFNNC=PARAM_CODQRY))	--|Si el campo NSLCPR está vacío 
-		OR (IFNULL(PARAM_NSLCPR,-1)<>-1 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
+		OR (IFNULL(PARAM_NSLCPR,0)>0 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
     
     
     SET RESPUESTA = '';
