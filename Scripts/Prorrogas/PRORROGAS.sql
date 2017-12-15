@@ -2193,6 +2193,21 @@ BEGIN
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
     END IF;
 
+	IF PARAM_SESTRG<>'*' THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado registro, no válido,';
+	END IF;
+	
+	IF PARAM_SSTSLP<>'P' THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación Solicitud prórroga, no válido,';
+	END IF;
+	
+	IF PARAM_SESTRG<>'A' THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado del registro, no válido,';
+	END IF;
+
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
@@ -2309,6 +2324,16 @@ BEGIN
         SET VAL = VAL + 1;
 		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
     END IF;
+
+	IF PARAM_SSTSLP<>'P' THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag situación Solicitud prórroga, no válido,';
+	END IF;
+	
+	IF PARAM_SESTRG<>'A' THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado del registro, no válido,';
+	END IF;	
 
     IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
 		SET VAL = VAL + 1;
@@ -2514,9 +2539,8 @@ GO
 -- ----------------------------------------------------------------------------------------------------
 --  4.1.13  REQF013     Rollback registro firma rechazo depositante (Solicitudes de prórroga)
 -- ----------------------------------------------------------------------------------------------------
-DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG
-GO
-CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG(
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG
+(
     IN PARAM_CCMPN CHAR(2),
     IN PARAM_NSLCPR NUMERIC(10, 0),
     IN PARAM_SESTRG CHAR(1),
@@ -2628,14 +2652,11 @@ BEGIN
 	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG', PARAMETROS, RESPUESTA);
 END
 GO
-
-
 -- ----------------------------------------------------------------------------------------------------
 --  4.1.13  REQF013     Rollback registro firma rechazo depositante (Representantes de solicitud)
 -- ----------------------------------------------------------------------------------------------------
-DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL
-GO
-CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL(
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL
+(
     IN PARAM_CCMPN CHAR(2),
     IN PARAM_NSLCPR NUMERIC(10, 0),
     IN PARAM_SESTRG CHAR(1),
@@ -2747,8 +2768,6 @@ BEGIN
 	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL', PARAMETROS, RESPUESTA);
 END
 GO
-
-
 -- ----------------------------------------------------------------------------------------------------
 --  4.1.13  REQF013     Rollback registro firma rechazo depositante (Firmas por prórroga)
 -- ----------------------------------------------------------------------------------------------------
@@ -2990,9 +3009,8 @@ GO
 -- ----------------------------------------------------------------------------------------------------
 --  4.1.15  REQF015     Rollback registro firma rechazo endosatorio (Solicitudes de prórroga)
 -- ----------------------------------------------------------------------------------------------------
-DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_SOLPRG
-GO
-CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_SOLPRG(
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_SOLPRG
+(
     IN PARAM_CCMPN CHAR(2),
     IN PARAM_NSLCPR NUMERIC(10, 0),
     IN PARAM_SESTRG CHAR(1),
@@ -3103,13 +3121,11 @@ BEGIN
 END
 GO
 
-
 -- ----------------------------------------------------------------------------------------------------
 --  4.1.15  REQF015     Rollback registro firma rechazo endosatorio (Representantes por solicitud)
 -- ----------------------------------------------------------------------------------------------------
-DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_REPSOL
-GO
-CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_REPSOL(
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_REPSOL
+(
     IN PARAM_CCMPN CHAR(2),
     IN PARAM_NSLCPR NUMERIC(10, 0),
     IN PARAM_SESTRG CHAR(1),
