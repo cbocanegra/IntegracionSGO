@@ -282,7 +282,6 @@ BEGIN
 
 END
 GO
-
 --4.1.3	REQF003 – Anulación de Solicitud Prórroga
 CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ANL_SOL_PRO
 (
@@ -351,7 +350,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 				
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -371,7 +370,7 @@ BEGIN
 				WHERE NSLCPR=PARAM_NSLCPR;
 				
 				SET PARAM_PROCSTATUS=0;
-				SET PARAM_PROCDESC='Registro modificado';
+				SET PARAM_PROCDESC='Registro anulado';
 			ELSE
 				SET PARAM_PROCSTATUS=1;
 				SET PARAM_PROCDESC='Registro no existe';
@@ -1793,3 +1792,1769 @@ BEGIN
 
 END
 GO
+
+
+
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+--------------------------------------------------------------------------------------------------------------------
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.9   REQF009     Registro Firma Rechazo Endosatorio (Solicitudes de prórroga)
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_SOLPRG
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_SESTRG <> '*' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWW21
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWW21
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Registro modificado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWW21
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Registro modificado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_SOLPRG', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.9   REQF009     Registro Firma Rechazo Endosatorio (Representantes por solicitud)
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_REPSOL
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> '*' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT94
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT94
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Registro modificado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT94
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Registro modificado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_REPSOL', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.9   REQF009     Registro Firma Rechazo Endosatorio (Firmas por prórroga)
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_FIRPRG
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> '*' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT95
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT95
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = RNSLIB.FECHA(),
+                    HULTAC = RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Registro modificado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT95
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = RNSLIB.FECHA(),
+                    HULTAC = RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Registro modificado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_REG_FIRMA_RECHAZO_END_FIRPRG', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.10  REQF010     Rollback Anulación Solicitud de Prórroga
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_ANULACION_SOLICITUD_PRORROGA
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SSTSLP CHAR(1),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SSTSLP, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWW21
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWW21
+                SET
+                    SSTSLP ='P',
+                    SESTRG = 'A',
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWW21
+                SET
+                    SSTSLP = 'P',
+                    SESTRG = 'A',
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SSTSLP: ' || IFNULL(PARAM_SSTSLP, '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_ANULACION_SOLICITUD_PRORROGA', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.11  REQF011     Rollback Envío Solicitud de Prórroga
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_ENVIAR_SOLICITUD_PRORROGA
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SSTSLP CHAR(1),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SSTSLP, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWW21
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWW21
+                SET
+                    SSTSLP ='P',
+                    SESTRG = 'A',
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWW21
+                SET
+                    SSTSLP = 'P',
+                    SESTRG = 'A',
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SSTSLP: ' || IFNULL(PARAM_SSTSLP, '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_ENVIAR_SOLICITUD_PRORROGA', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.12  REQF012     Rollback Registro firma prórroga depositante
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_PRORROGA_DEP
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Datos de compañía no válidos,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT95 / Eliminación ZZWT94
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT95
+                SET
+                    SFRMCL = ' ',
+                    NFRMCL = 0,
+                    NFRRCL = 0 , 
+                    FULTAC = DC@RNSLIB.FECHA(), 
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                IF EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'C') THEN
+                    DELETE FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'C';
+                END IF;
+
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT95
+                SET
+                    SFRMCL = ' ',
+                    NFRMCL = 0,
+                    NFRRCL = 0 , 
+                    FULTAC = DC@RNSLIB.FECHA(), 
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                IF EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'C') THEN
+                    DELETE FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'C';
+                END IF;
+
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_PRORROGA_DEP', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.13  REQF013     Rollback registro firma rechazo depositante (Solicitudes de prórroga)
+-- ----------------------------------------------------------------------------------------------------
+DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG
+GO
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> 'A' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWW21
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWW21
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado,';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWW21
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado,';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_SOLPRG', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.13  REQF013     Rollback registro firma rechazo depositante (Representantes de solicitud)
+-- ----------------------------------------------------------------------------------------------------
+DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL
+GO
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> 'A' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT94
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'C') THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT94
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR AND STPENT = 'C';
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'C') THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT94
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR AND STPENT = 'C';
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_REPSOL', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.13  REQF013     Rollback registro firma rechazo depositante (Firmas por prórroga)
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_FIRPRG
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> 'A' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT95
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT95
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT95
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC ='Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_RECHAZO_DEP_FIRPRG', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.14  REQF014     Rollback registro firma prórroga endosatorio
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_PRORROGA_END
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Actualización ZZWT95 / Eliminación ZZWT94
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Lógica
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT95
+                SET
+                    SFRMBN = ' ',
+                    NFRMBN = 0,
+                    NFRRBN = 0, 
+                    FULTAC = DC@RNSLIB.FECHA(), 
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                IF EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B') THEN
+                    DELETE FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B';
+                END IF;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT95
+                SET
+                    SFRMBN = ' ',
+                    NFRMBN = 0,
+                    NFRRBN = 0, 
+                    FULTAC = DC@RNSLIB.FECHA(), 
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE
+                    NSLCPR = PARAM_NSLCPR;
+                
+                IF EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B') THEN
+                    DELETE FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B';
+                END IF;
+                
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REGISTRO_FIRMA_PRORROGA_END', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.15  REQF015     Rollback registro firma rechazo endosatorio (Solicitudes de prórroga)
+-- ----------------------------------------------------------------------------------------------------
+DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_SOLPRG
+GO
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_SOLPRG(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> 'A' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWW21
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWW21
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE NSLCPR = PARAM_NSLCPR;
+            
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWW21 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWW21
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE NSLCPR = PARAM_NSLCPR;
+            
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_SOLPRG', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.15  REQF015     Rollback registro firma rechazo endosatorio (Representantes por solicitud)
+-- ----------------------------------------------------------------------------------------------------
+DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_REPSOL
+GO
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_REPSOL(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> 'A' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT94
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B') THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT94
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B';
+            
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT94 WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B') THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT94
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE NSLCPR = PARAM_NSLCPR AND STPENT = 'B';
+            
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_REPSOL', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.1.15  REQF015     Rollback registro firma rechazo endosatorio (Firmas por prórroga)
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_FIRPRG
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_NSLCPR NUMERIC(10, 0),
+    IN PARAM_SESTRG CHAR(1),
+    IN PARAM_CULUSA CHAR(10),
+    IN PARAM_NTRMNL CHAR(10),
+    INOUT PARAM_PROCSTATUS INT,
+    INOUT PARAM_PROCDESC VARCHAR(250)
+)
+BEGIN
+    DECLARE VAL INTEGER DEFAULT 0;
+	DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    -- Validaciones
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        IFNULL(PARAM_NSLCPR, 0) = 0 OR
+        TRIM(B ' ' FROM IFNULL(PARAM_SESTRG, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_CULUSA, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_NTRMNL, '')) = ''
+    THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Los parámetros de entrada deben tener valor,';
+    END IF;
+
+    IF PARAM_CCMPN NOT IN ('AM', 'LZ') THEN
+        SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de compañía no válido,';
+    END IF;
+
+    IF PARAM_SESTRG <> 'A' THEN
+        SET VAL = VAL + 1;
+        SET PARAM_PROCDESC = PARAM_PROCDESC || 'Flag estado de registro no válido,';
+    END IF;
+
+    IF PARAM_CULUSA NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Código de usuario no válido,';
+	END IF;
+
+    IF PARAM_NTRMNL NOT IN ('WEBALMA', 'WEBCASA') THEN
+		SET VAL = VAL + 1;
+		SET PARAM_PROCDESC = PARAM_PROCDESC || 'Número de terminal no válido,';
+	END IF;
+
+    -- Actualización ZZWT95
+    IF VAL = 0 THEN
+
+        IF PARAM_CCMPN = 'AM' THEN --DC@ALMAPER
+
+            IF NOT EXISTS (SELECT 1 FROM DC@ALMAPER.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@ALMAPER.ZZWT95
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE NSLCPR = PARAM_NSLCPR;
+            
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSEIF PARAM_CCMPN = 'LZ' THEN --DC@RNSLIB
+        
+            IF NOT EXISTS (SELECT 1 FROM DC@RNSLIB.ZZWT95 WHERE NSLCPR = PARAM_NSLCPR) THEN
+                SET PARAM_PROCSTATUS = 1;
+                SET PARAM_PROCDESC = 'El registro no existe';
+            ELSE
+                UPDATE
+                    DC@RNSLIB.ZZWT95
+                SET
+                    SESTRG = PARAM_SESTRG,
+                    FULTAC = DC@RNSLIB.FECHA(),
+                    HULTAC = DC@RNSLIB.HORA(),
+                    CULUSA = PARAM_CULUSA,
+                    NTRMNL = PARAM_NTRMNL
+                WHERE NSLCPR = PARAM_NSLCPR;
+            
+                SET PARAM_PROCSTATUS = 0;
+                SET PARAM_PROCDESC = 'Rollback realizado';
+            END IF;
+
+        ELSE
+            SET PARAM_PROCSTATUS = 1;
+			SET PARAM_PROCDESC = 'Esquema no válido';
+        END IF;
+
+    ELSE
+        SET PARAM_PROCSTATUS = 1;
+		SET PARAM_PROCDESC = 'Error en validaciones: ' || PARAM_PROCDESC;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_SESTRG: ' || IFNULL(PARAM_SESTRG, '(NULL)') || ' | ' ||
+        'PARAM_CULUSA: ' || IFNULL(PARAM_CULUSA, '(NULL)') || ' | ' ||
+        'PARAM_NTRMNL: ' || IFNULL(PARAM_NTRMNL, '(NULL)');
+	SET RESPUESTA = IFNULL(CAST(PARAM_PROCSTATUS AS VARCHAR(250)) || ' | ' || IFNULL(PARAM_PROCDESC,'Sin mensaje'),'Error');
+	
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_ROLL_REG_FIRMA_RECHAZO_END_FIRPRG', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.2.1   REQFE001    Consulta prórrogas de warrants vigentes
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_CONSULTA_PRORROGAS_WAR_VIGENTES
+(
+    IN PARAM_CCMPN CHAR(2)
+)
+LANGUAGE SQL 
+DYNAMIC RESULT SETS 1
+BEGIN
+    DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    DECLARE C_NODATA CURSOR FOR
+        SELECT 'Sin datos' AS RESULT FROM SYSIBM.SYSDUMMY1;
+    
+    DECLARE C_ALMAPER CURSOR FOR
+        SELECT
+            -- Operaciones Cabecera (ZZWM06)
+            A.CCMPN, A.NOPRCN, A.NWRRNT, A.NCRTDP, A.CTPOAL, A.CTOPRC, A.CALMCM, A.CCLNT, A.CCMPSG, A.SSGRPR, A.CRGMN,
+            A.SCNINP, A.ISLVFS, A.ISLVFN, A.ISLVLD, A.CFNNC, A.FINGR, A.FPRMVN, A.FVNCMX, A.CMNDA, A.SSTCOP,
+            -- Almacenes (RZZM23)
+            B.CUBALC, B.TDRALC,
+            -- Solicitudes de prórroga (ZZWM21)
+            C.NSLCPR, C.FPRRGA, C.ISLDCL, C.ISLDMR,
+            -- Representantes por prórroga (Financiador)
+            D.NSLCPR AS NSLCPR1, D.CRPRS AS CRPRS1, D.FFRMRP AS FFRMRP1, D.HULTAC AS HULTAC1,
+            -- Representantes por prórroga (Cliente)
+            E.NSLCPR AS NSLCPR2, E.CRPRS AS CRPRS2, E.FFRMRP AS FFRMRP2, E.HULTAC AS HULTAC2,
+            -- Exwarrant
+            G.NEXWRR
+        FROM
+            -- Operaciones ZZWM06
+            DC@ALMAPER.ZZWM06 A
+            -- Almacenes RZZM23
+            LEFT OUTER JOIN DC@ALMAPER.RZZM23 B ON A.CTPOAL = B.CTPOAL AND A.CALMCM = B.CALMCM
+            -- Solicitudes de prórroga ZZWW21
+            LEFT OUTER JOIN DC@ALMAPER.ZZWW21 C ON A.NOPRCN = C.NOPRCN
+            -- Representantes de solicitud de prórroga ZZWT94
+            LEFT OUTER JOIN DC@ALMAPER.ZZWT94 D ON C.NSLCPR = D.NSLCPR AND D.STPENT = 'A' -- Almacenera
+            LEFT OUTER JOIN DC@ALMAPER.ZZWT94 E ON C.NSLCPR = E.NSLCPR AND E.STPENT = 'B' -- Financiador
+            LEFT OUTER JOIN DC@ALMAPER.ZZWT94 F ON C.NSLCPR = E.NSLCPR AND E.STPENT = 'C' -- Cliente
+            -- Exwarrant ZZWT23
+            LEFT OUTER JOIN DC@ALMAPER.ZZWT23 G ON A.NOPRCN = G.NOPRCN
+        WHERE
+            A.CTOPRC = 'W' AND A.SESTRG = 'A';
+    
+    DECLARE C_RNSLIB CURSOR FOR
+        SELECT
+            -- Operaciones Cabecera (ZZWM06)
+            A.CCMPN, A.NOPRCN, A.NWRRNT, A.NCRTDP, A.CTPOAL, A.CTOPRC, A.CALMCM, A.CCLNT, A.CCMPSG, A.SSGRPR, A.CRGMN,
+            A.SCNINP, A.ISLVFS, A.ISLVFN, A.ISLVLD, A.CFNNC, A.FINGR, A.FPRMVN, A.FVNCMX, A.CMNDA, A.SSTCOP,
+            -- Almacenes (RZZM23)
+            B.CUBALC, B.TDRALC,
+            -- Solicitudes de prórroga (ZZWM21)
+            C.NSLCPR, C.FPRRGA, C.ISLDCL, C.ISLDMR,
+            -- Representantes por prórroga (Almacenera)
+            D.NSLCPR AS NSLCPR1, D.CRPRS AS CRPRS1, D.FFRMRP AS FFRMRP1, D.HULTAC AS HULTAC1,
+            -- Representantes por prórroga (Financiador)
+            E.NSLCPR AS NSLCPR2, E.CRPRS AS CRPRS2, E.FFRMRP AS FFRMRP2, E.HULTAC AS HULTAC2,
+            -- Representantes por prórroga (Cliente)
+            F.NSLCPR AS NSLCPR3, E.CRPRS AS CRPRS3, E.FFRMRP AS FFRMRP3, E.HULTAC AS HULTAC3
+            -- Exwarrant
+            G.NEXWRR
+        FROM
+            -- Operaciones ZZWM06
+            DC@RNSLIB.ZZWM06 A
+            -- Almacenes RZZM23
+            LEFT OUTER JOIN DC@RNSLIB.RZZM23 B ON A.CTPOAL = B.CTPOAL AND A.CALMCM = B.CALMCM
+            -- Solicitudes de prórroga ZZWW21
+            LEFT OUTER JOIN DC@RNSLIB.ZZWW21 C ON A.NOPRCN = C.NOPRCN
+            -- Representantes de solicitud de prórroga ZZWT94
+            LEFT OUTER JOIN DC@RNSLIB.ZZWT94 D ON C.NSLCPR = D.NSLCPR AND D.STPENT = 'A' -- Almacenera
+            LEFT OUTER JOIN DC@RNSLIB.ZZWT94 E ON C.NSLCPR = E.NSLCPR AND E.STPENT = 'B' -- Financiador
+            LEFT OUTER JOIN DC@RNSLIB.ZZWT94 F ON C.NSLCPR = E.NSLCPR AND E.STPENT = 'C' -- Cliente
+            -- Exwarrant ZZWT23
+            LEFT OUTER JOIN DC@RNSLIB.ZZWT23 G ON A.NOPRCN = G.NOPRCN
+        WHERE
+            A.CTOPRC = 'W' AND A.SESTRG = 'A';
+    
+    SET RESPUESTA = '';
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = ''
+    THEN
+        SET RESPUESTA = 'Sin datos';
+        OPEN C_NODATA;
+    ELSE
+        IF PARAM_CCMPN = 'AM' THEN
+            OPEN C_ALMAPER;
+        ELSEIF PARAM_CCMPN = 'LZ' THEN
+            OPEN C_RNSLIB;
+        ELSE
+            SET RESPUESTA = 'Sin datos';
+            OPEN C_NODATA;
+        END IF;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)');
+    
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_CONSULTA_PRORROGAS_WAR_VIGENTES', PARAMETROS, RESPUESTA);
+END
+GO
+
+-- ----------------------------------------------------------------------------------------------------
+--  4.2.2   REQFE002    Consulta Relación de los datos de la prórroga
+-- ----------------------------------------------------------------------------------------------------
+CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_CONSULTA_RELACION_DATOS_PRORROGA
+(
+    IN PARAM_CCMPN CHAR(2),
+    IN PARAM_STPQRY CHAR(1),
+    IN PARAM_CODQRY NUMERIC(10,0),
+    IN PARAM_NSLCPR NUMERIC(10,0)
+)
+LANGUAGE SQL 
+DYNAMIC RESULT SETS 1
+BEGIN
+    DECLARE PARAMETROS VARCHAR(2000);
+	DECLARE RESPUESTA VARCHAR(100);
+
+    DECLARE C_NODATA CURSOR FOR
+        SELECT 'Sin datos' AS RESULT FROM SYSIBM.SYSDUMMY1;
+    
+    -- NSLCPR no tiene valor
+    DECLARE C_ALMAPER CURSOR FOR
+        SELECT
+            -- Operaciones - Cabecera (ZZWM06)
+            A.CCMPN, A.NOPRCN, A.NWRRNT, A.NCRTDP, A.CCLNT, A.CFNNC, A.SSTCOP, A.SESTRG,
+            -- Solicitudes de prórroga (ZZWW21)
+            B.NSLCPR, B.NENDS, B.FENDS, B.FPRRGA, B.ISLDCL, B.ISLDMR
+        FROM
+            DC@ALMAPER.ZZWM06 A
+            LEFT OUTER JOIN DC@ALMAPER.ZZWW21 B ON A.NOPRCN = B.NOPRCN
+        WHERE
+            A.CCMPN = PARAM_CCMPN AND (
+                (A.PARAM_STPQRY = 'C' AND A.CCLNT = PARAM_CODQRY) OR
+                (A.PARAM_STPQRY = 'B' AND A.CFNNC = PARAM_CODQRY)
+            );
+    
+    -- NSLCPR tiene valor
+    DECLARE C_ALMAPER_2 CURSOR FOR
+        SELECT
+            -- Operaciones - Cabecera (ZZWM06)
+            B.CCMPN, B.NOPRCN, B.NWRRNT, B.NCRTDP, B.CCLNT, B.CFNNC, B.SSTCOP, B.SESTRG,
+            -- Solicitudes de prórroga (ZZWW21)
+            A.NSLCPR, A.NENDS, A.FENDS, A.FPRRGA, A.ISLDCL, A.ISLDMR
+        FROM
+            DC@ALMAPER.ZZWW21 A
+            LEFT OUTER JOIN DC@ALMAPER.ZZWM06 B ON A.NOPRCN = B.NOPRCN
+        WHERE
+            A.NOPRCN = PARAM_NSLCPR;
+            
+    
+    -- NSLCPR no tiene valor
+    DECLARE C_RNSLIB CURSOR FOR
+        SELECT
+            -- Operaciones - Cabecera (ZZWM06)
+            A.CCMPN, A.NOPRCN, A.NWRRNT, A.NCRTDP, A.CCLNT, A.CFNNC, A.SSTCOP, A.SESTRG,
+            -- Solicitudes de prórroga (ZZWW21)
+            B.NSLCPR, B.NENDS, B.FENDS, B.FPRRGA, B.ISLDCL, B.ISLDMR
+        FROM
+            DC@RNSLIB.ZZWM06 A
+            LEFT OUTER JOIN DC@RNSLIB.ZZWW21 B ON A.NOPRCN = B.NOPRCN
+        WHERE
+            A.CCMPN = PARAM_CCMPN AND (
+                (A.PARAM_STPQRY = 'C' AND A.CCLNT = PARAM_CODQRY) OR
+                (A.PARAM_STPQRY = 'B' AND A.CFNNC = PARAM_CODQRY)
+            );
+    
+    -- NSLCPR tiene valor
+    DECLARE C_RNSLIB_2 CURSOR FOR
+        SELECT
+            -- Operaciones - Cabecera (ZZWM06)
+            B.CCMPN, B.NOPRCN, B.NWRRNT, B.NCRTDP, B.CCLNT, B.CFNNC, B.SSTCOP, B.SESTRG,
+            -- Solicitudes de prórroga (ZZWW21)
+            A.NSLCPR, A.NENDS, A.FENDS, A.FPRRGA, A.ISLDCL, A.ISLDMR
+        FROM
+            DC@RNSLIB.ZZWW21 A
+            LEFT OUTER JOIN DC@RNSLIB.ZZWM06 B ON A.NOPRCN = B.NOPRCN
+        WHERE
+            A.NOPRCN = PARAM_NSLCPR;
+    
+    SET RESPUESTA = '';
+    IF
+        TRIM(B ' ' FROM IFNULL(PARAM_CCMPN, '')) = '' OR
+        TRIM(B ' ' FROM IFNULL(PARAM_STPQRY, '')) = '' OR
+        IFNULL(PARAM_CODQRY, 0) = 0 OR
+        PARAM_STPQRY NOT IN ('C','B')
+    THEN
+        SET RESPUESTA = 'Sin datos';
+        OPEN C_NODATA;
+    ELSE
+        IF PARAM_CCMPN = 'AM' THEN
+            IF ISNULL(PARAM_NSLCPR, 0) = 0 THEN
+                OPEN C_ALMAPER;
+            ELSE
+                OPEN C_ALMAPER_2;
+            END IF;
+        ELSEIF PARAM_CCMPN = 'LZ' THEN
+            IF ISNULL(PARAM_NSLCPR, 0) = 0 THEN
+                OPEN C_RNSLIB;
+            ELSE
+                OPEN C_RNSLIB_2;
+            END IF;
+        ELSE
+            SET RESPUESTA = 'Sin datos';
+            OPEN C_NODATA;
+        END IF;
+    END IF;
+
+    SET PARAMETROS =
+        'PARAM_CCMPN: ' || IFNULL(PARAM_CCMPN, '(NULL)') || ' | ' ||
+        'PARAM_STPQRY: ' || IFNULL(PARAM_STPQRY, '(NULL)') || ' | ' ||
+        'PARAM_CODQRY: ' || IFNULL(CAST(PARAM_CODQRY AS VARCHAR(30)), '(NULL)') || ' | ' ||
+        'PARAM_NSLCPR: ' || IFNULL(CAST(PARAM_NSLCPR AS VARCHAR(30)), '(NULL)');
+    
+	CALL INTEGRASGO.SP_INTSGO_GEN_ILOG('SP_INTSGO_PRG_CONSULTA_RELACION_DATOS_PRORROGA', PARAMETROS, RESPUESTA);
+END
+GO
+
+
+
