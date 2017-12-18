@@ -3514,6 +3514,7 @@ GO
 -- ----------------------------------------------------------------------------------------------------
 --  4.2.2   REQFE002    Consulta Relación de los datos de la prórroga
 -- ----------------------------------------------------------------------------------------------------
+--DROP PROCEDURE INTEGRASGO.SP_INTSGO_PRG_CONSULTA_RELACION_DATOS_PRORROGA
 CREATE PROCEDURE INTEGRASGO.SP_INTSGO_PRG_CONSULTA_RELACION_DATOS_PRORROGA
 (
     IN PARAM_CCMPN CHAR(2),
@@ -3541,7 +3542,7 @@ BEGIN
 			(IFNULL(PARAM_NSLCPR,0)=0 AND																--|Si el campo NSLCPR está vacío 
 			A1.CCMPN=PARAM_CCMPN /*AND A1.CODQRY=PARAM_CODQRY */ AND 									--|Si el campo NSLCPR está vacío 
 			((PARAM_STPQRY='C' AND CCLNT=PARAM_CODQRY) OR (PARAM_STPQRY='B' AND CFNNC=PARAM_CODQRY))	--|Si el campo NSLCPR está vacío 
-		OR (IFNULL(PARAM_NSLCPR,0)>0 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
+		OR (IFNULL(PARAM_NSLCPR,0)>0 AND A2.NSLCPR=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
     
     DECLARE C_RNSLIB CURSOR FOR
     	SELECT 
@@ -3554,7 +3555,7 @@ BEGIN
 			(IFNULL(PARAM_NSLCPR,0)=0 AND																--|Si el campo NSLCPR está vacío 
 			A1.CCMPN=PARAM_CCMPN /*AND A1.CODQRY=PARAM_CODQRY */ AND 									--|Si el campo NSLCPR está vacío 
 			((PARAM_STPQRY='C' AND CCLNT=PARAM_CODQRY) OR (PARAM_STPQRY='B' AND CFNNC=PARAM_CODQRY))	--|Si el campo NSLCPR está vacío 
-		OR (IFNULL(PARAM_NSLCPR,0)>0 AND A2.NOPRCN=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
+		OR (IFNULL(PARAM_NSLCPR,0)>0 AND A2.NSLCPR=PARAM_NSLCPR));									-- Si el campo NSLCPR no está vacío  
     
     
     SET RESPUESTA = '';
