@@ -4558,7 +4558,7 @@ BEGIN
                         (PARAM_STPQRY = 'C' AND B.CCLNT = PARAM_CODQRY)
                         OR
                         (PARAM_STPQRY = 'B' AND B.CFNNC = PARAM_CODQRY)
-                    )
+                    ) AND A.SLBWEB='A' AND A.SSTCLB='E' AND A.SESTRG='A'
                 )
                 OR
                 (
@@ -4588,7 +4588,7 @@ BEGIN
                         (PARAM_STPQRY = 'C' AND B.CCLNT = PARAM_CODQRY)
                         OR
                         (PARAM_STPQRY = 'B' AND B.CFNNC = PARAM_CODQRY)
-                    )
+                    ) AND A.SLBWEB='A' AND A.SSTCLB='E' AND A.SESTRG='A'
                 )
                 OR
                 (
@@ -4725,6 +4725,7 @@ BEGIN
         WHERE
             A.CCLNT = PARAM_CCLNT AND
             A.SESTRG = 'A' AND
+            A.SLBWEB='A' AND A.SSTCLB='E' AND A.SESTRG='A' AND
             A.CUSCRT NOT IN ('WEBALMA','WEBCASA');
 
     -- DC@RNSLIB
@@ -4744,6 +4745,7 @@ BEGIN
         WHERE
             A.CCLNT = PARAM_CCLNT AND
             A.SESTRG = 'A' AND
+            A.SLBWEB='A' AND A.SSTCLB='E' AND A.SESTRG='A' AND
             A.CUSCRT NOT IN ('WEBALMA','WEBCASA');
 
     SET RESPUESTA = '';
