@@ -133,7 +133,7 @@ END
 GO
 
 --***************************************************************************************************
-
+DROP PROCEDURE INTEGRASGO.SP_INTSGO_GEN_REGISTRA_REPRESENTANTE
 CREATE PROCEDURE INTEGRASGO.SP_INTSGO_GEN_REGISTRA_REPRESENTANTE
 (
 IN PARAM_CCMPN CHAR(2),
@@ -255,7 +255,7 @@ IF VAL=0 THEN
                                 DC@RNSLIB.HORA(),
                                 PARAM_CULUSA);
                                 SET PARAM_PROCSTATUS=0;
-                                SET PARAM_PROCDESC='El registro ya existe';
+                                SET PARAM_PROCDESC='El registro insertado';
 
 					ELSE
 								SET PARAM_PROCSTATUS=1;
